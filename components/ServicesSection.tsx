@@ -18,7 +18,7 @@ const services: ServiceCardProps[] = [
       { text: "Persuasive Copywriting for Investor Confidence", isBold: true, className:"mt-4" },
       { text: "Refined brand messaging to establish authority, attract funding, and drive engagement." },
       { text: "💼 Enhance your brand visibility", isBold: true, className:"mt-4" },
-      { text: "SEO-optimized to solidify trust and expand reach." isBold: true, className:"mt-4" },
+      { text: "SEO-optimized to solidify trust and expand reach.", isBold: true, className:"mt-4" },
       { text: "With the precision your brand deserves and your audience craves.", isMarked: true, markColor: "text-white" , className:"mt-4"}
     ]
   },

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EloyText</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Quattrocento:wght@400;700&family=Sedan:wght@400&family=Inter:wght@400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nunito Sans', sans-serif; /* Default font */
+      min-height: 100vh;
+      background-image: linear-gradient(55deg, #431F54 0%, #151226 60%, #17254A 100%);
+      color: #FFFFFF; /* Default text color */
+      margin: 0; /* Ensure no default margin */
+      overflow-x: hidden; /* Prevent horizontal scroll from SVG if any slight overflow */
+    }
+    /* Custom scrollbar for better aesthetics (optional, WebKit only) */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #151226;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #5F476B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7B6187;
+    }
+    .text-gradient {
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .text-gradient-primary {
+      background-image: linear-gradient(45deg, rgba(255,255,255,0.412) 0%, #FFFFFF 67%);
+    }
+     .text-gradient-secondary {
+      background-image: linear-gradient(297deg, rgba(255,255,255,0.412) 0%, #FFFFFF 31%);
+    }
+
+    #animated-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0; /* Ensure it's behind other content */
+      pointer-events: none; 
+    }
+
+    #root {
+      position: relative; /* Establishes a stacking context */
+      z-index: 1;       /* Ensures #root is above elements with lower or no z-index, but below chat modal */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.6.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <svg id="animated-background" width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <style type="text/css">
+      circle { fill: rgba(170,117,255,0.188); }
+    </style>
+    <circle cx="331.8123" cy="303.8262" r="0.8658" fill-opacity="1">
+      <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="331.8123;332.4542;333.1698;333.9726;334.8798;335.9128;337.1;338.4787;340.0991;342.0311;344.3739;347.2744;350.9584;355.793;362.4171;362.4171;362.4171;362.4171;362.4171;362.4171;362.4171" />
+      <animate attributeName="cy" dur="5s" repeatCount="indefinite" values="303.8262;307.2944;311.1611;315.4993;320.4007;325.9828;332.3977;339.847;348.6029;359.042;371.7013;387.3735;407.2795;433.4027;469.1949;469.1949;469.1949;469.1949;469.1949;469.1949;469.1949" />
+      <animate attributeName="r" dur="5s" repeatCount="indefinite" values="0.8658;0.9129;0.9653;1.0242;1.0907;1.1664;1.2534;1.3545;1.4732;1.6148;1.7866;1.9992;2.2692;2.6236;3.1091;3.1091;3.1091;3.1091;3.1091;3.1091;3.1091" />
+      <animate attributeName="fill-opacity" dur="5s" repeatCount="indefinite" values="1;1;1;1;1;1;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0" />
+    </circle>
+    <circle cx="425.133" cy="117.8427" r="0.4877" fill-opacity="1">
+      <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="425.133;432.7724;441.6091;451.9483;464.209;478.9816;497.1262;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461;519.9461" />
+      <animate attributeName="cy" dur="5s" repeatCount="indefinite" values="117.8427;108.9662;98.6987;86.6852;72.4392;55.2744;34.1916;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765;7.6765" />
+      <animate attributeName="r" dur="5s" repeatCount="indefinite" values="0.4877;0.5232;0.5642;0.6121;0.669;0.7376;0.8217;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276;0.9276" />
+      <animate attributeName="fill-opacity" dur="5s" repeatCount="indefinite" values="1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0" />
+    </circle>
+    <circle cx="284.7766" cy="316.1389" r="0.2746" fill-opacity="1">
+      <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="284.7766;282.6388;280.2248;277.4773;274.3221;270.661;266.362;261.2423;255.0421;247.3791;237.6663;224.9542;207.5999;207.5999;207.5999;207.5999;207.5999;207.5999;207.5999;207.5999;207.5999" />
+      <animate attributeName="cy" dur="5s" repeatCount="indefinite" values="316.1389;320.7598;325.978;331.917;338.7374;346.6511;355.9438;367.0105;380.4128;396.9772;417.9725;445.451;482.964;482.964;482.964;482.964;482.964;482.964;482.964;482.964;482.964" />
+      <animate attributeName="r" dur="5s" repeatCount="indefinite" values="0.2746;0.2913;0.3101;0.3316;0.3562;0.3847;0.4182;0.4582;0.5065;0.5663;0.642;0.7411;0.8764;0.8764;0.8764;0.8764;0.8764;0.8764;0.8764;0.8764;0.8764" />
+      <animate attributeName="fill-opacity" dur="5s" repeatCount="indefinite" values="1;1;1;1;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0" />
+    </circle>
+    <circle cx="157.0809" cy="322.71" r="0.8312" fill-opacity="1">
+      <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="157.0809;147.1007;135.818;122.9599;108.1718;90.9839;70.7603;46.6191;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997;17.2997" />
+      <animate attributeName="cy" dur="5s" repeatCount="indefinite" values="322.71;327.7767;333.5047;340.0324;347.54;356.2659;366.5329;378.7888;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736;393.6736" />
+      <animate attributeName="r" dur="5s" repeatCount="indefinite" values="0.8312;0.8821;0.9397;1.0053;1.0807;1.1684;1.2716;1.3948;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444;1.5444" />
+      <animate attributeName="fill-opacity" dur="5s" repeatCount="indefinite" values="1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0" />
+    </circle>
+    <circle cx="562.4661" cy="77.4358" r="2.0713" fill-opacity="1">
+      <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="562.4661;588.1836;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004;620.004" />
+      <animate attributeName="cy" dur="5s" repeatCount="indefinite" values="77.4358;60.1932;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589;38.8589" />
+      <animate attributeName="r" dur="5s" repeatCount="indefinite" values="2.0713;2.291;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629;2.5629" />
+      <animate attributeName="fill-opacity" dur="5s" repeatCount="indefinite" values="1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0" />
+    </circle>
+  </svg>
+  <div id="root"></div>
+  <script type="module" src="./index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

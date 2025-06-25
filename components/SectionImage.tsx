@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 
 interface SectionImageProps {
@@ -16,7 +17,7 @@ interface SectionImageProps {
 export const SectionImage: React.FC<SectionImageProps> = ({
   src,
   alt,
-  className = "w-full md:w-[66.125rem] h-auto md:h-[21.625rem]", // Default can be overridden by Hero
+  className = "w-full h-auto", // Default to responsive width and auto height
   imageClassName = "object-cover", // Default to object-cover
   rounded = "rounded-[1.875rem]", // Default rounding for images
   animateZoom = false,

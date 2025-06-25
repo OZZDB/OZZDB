@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { ArrowRightIcon, CalendarIcon } from './icons';
 import { SectionImage } from './SectionImage';
@@ -9,7 +10,7 @@ export const Hero: React.FC = () => {
       <SectionImage 
         src="https://lh3.googleusercontent.com/d/1MH8k7vEQ1h1ogXMO45cEX9NaKEHGZ4z6" 
         alt="EloyText visual concept" 
-        className="w-full md:w-[66.125rem] h-auto md:h-[21.625rem] mx-auto" // Updated to specific dimensions
+        className="w-full max-w-[66.125rem] h-auto md:h-[21.625rem]" // Use max-w for better fitting, removed redundant mx-auto
         imageClassName="object-contain" 
         rounded="rounded-[1.875rem]"
         animateZoom={true}

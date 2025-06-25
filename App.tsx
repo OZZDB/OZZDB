@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Hero } from './components/Hero';
 import { ServicesSection } from './components/ServicesSection';
@@ -54,6 +55,7 @@ const App: React.FC = () => {
             <SectionImage 
               src="https://lh3.googleusercontent.com/d/1RVIwf5K1LMvqLLIjgvMsyZFOxbEIlLkR" 
               alt="Conceptual image representing global impact and clarity"
+              className="w-full max-w-[66.125rem] h-auto md:h-[21.625rem]" // Added explicit className
             />
           </div>
 

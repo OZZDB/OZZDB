@@ -14,9 +14,6 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-// Access API_KEY using process.env
-const API_KEY = process.env.API_KEY;
-
 export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -29,17 +26,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!API_KEY) {
-      console.warn("API_KEY is missing from environment variables. Chat functionality will be disabled. Make sure it's set in your environment.");
+    // Access API_KEY using process.env
+    const apiKey = process.env.API_KEY;
+
+    if (!apiKey) {
+      console.warn("API_KEY is missing. Please ensure it is set as an environment variable. Chat functionality will be disabled.");
       setIsApiKeyMissing(true);
       return;
     }
     setIsApiKeyMissing(false);
     if (isOpen && !chat) {
       try {
-        const ai = new GoogleGenAI({ apiKey: API_KEY });
+        const ai = new GoogleGenAI({ apiKey: apiKey });
         const newChat = ai.chats.create({
-          model: 'gemini-2.5-pro', // Updated model name
+          model: 'gemini-2.5-flash-preview-04-17',
           config: {
             systemInstruction: "You are EloyText's friendly and helpful AI assistant. Your purpose is to provide information about EloyText's services (Legal Drafting, Copywriting, Content Strategy), help users understand how EloyText can benefit their business, and guide them on how to get started or schedule a consultation. Keep responses concise and professional. If a question is outside your scope, politely state that and suggest contacting EloyText directly or scheduling a consultation. Do not use markdown formatting in your responses.",
           },
@@ -205,11 +205,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isApiKeyMissing ? "Chat unavailable" : "Type your message..."}
+              placeholder={isApiKeyMissing ? "Chat unavailable (API key missing)" : "Type your message..."}
               className="flex-1 p-2.5 bg-[#2A2E45] border border-[#5F476B] rounded-lg resize-none focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] focus:outline-none text-sm placeholder-gray-400 text-white min-h-[44px] max-h-28"
               rows={1}
               disabled={isLoading || isApiKeyMissing}
-              aria-label="Type your message"
+              aria-label={isApiKeyMissing ? "Chat input disabled due to missing API key" : "Type your message"}
             />
             <button
               type="submit"

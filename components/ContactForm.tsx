@@ -14,6 +14,13 @@ interface FormErrors {
   message?: string;
 }
 
+// Helper function to encode form data for Netlify
+const encode = (data: { [key: string]: any }) => {
+  return Object.keys(data)
+    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+    .join("&");
+}
+
 export const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -24,6 +31,7 @@ export const ContactForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -53,19 +61,33 @@ export const ContactForm: React.FC = () => {
 
     setIsSubmitting(true);
     setIsSubmitted(false);
+    setSubmissionError(null);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encode({
+          "form-name": "contact",
+          ...formData,
+        }),
+      });
+      
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setErrors({});
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setErrors({});
+      // Hide success message after a few seconds
+      setTimeout(() => {
+          setIsSubmitted(false);
+      }, 5000);
 
-    // Hide success message after a few seconds
-    setTimeout(() => {
-        setIsSubmitted(false);
-    }, 5000);
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setIsSubmitting(false);
+      setSubmissionError("Sorry, there was an error sending your message. Please try again later.");
+    }
   };
 
   return (
@@ -83,7 +105,28 @@ export const ContactForm: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-6 text-left">
+      {submissionError && (
+        <div className="mb-6 p-4 bg-red-700/30 border border-red-500 text-red-200 rounded-lg max-w-md mx-auto" role="alert">
+          {submissionError}
+        </div>
+      )}
+
+      <form 
+        onSubmit={handleSubmit}
+        name="contact"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        className="max-w-xl mx-auto space-y-6 text-left"
+      >
+        {/* Hidden input for Netlify form name */}
+        <input type="hidden" name="form-name" value="contact" />
+        <p className="hidden">
+          <label>
+            Don’t fill this out if you're human: <input name="bot-field" />
+          </label>
+        </p>
+        
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
             Full Name <span className="text-red-400">*</span>

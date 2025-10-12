@@ -53,7 +53,7 @@ const App: React.FC = () => {
           
           <div className={`transition-opacity duration-[375ms] ease-in-out ${conceptualImageVisible ? 'opacity-100' : 'opacity-0'}`}>
             <SectionImage 
-              src="https://lh3.googleusercontent.com/d/1RVIwf5K1LMvqLLIjgvMsyZFOxbEIlLkR" 
+              src="./images/Conceptual_image_representing_global_impact_and_clarity.jpg" 
               alt="Conceptual image representing global impact and clarity"
               className="w-full max-w-[66.125rem] h-auto md:h-[21.625rem]" // Added explicit className
             />

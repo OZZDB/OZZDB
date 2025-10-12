@@ -8,11 +8,11 @@ export const Hero: React.FC = () => {
   return (
     <div className="flex flex-col items-center text-center space-y-10 md:space-y-12">
       <SectionImage 
-        src="https://lh3.googleusercontent.com/d/1MH8k7vEQ1h1ogXMO45cEX9NaKEHGZ4z6" 
+        src="./images/EloyText_visual_concept.svg" 
         alt="EloyText visual concept" 
-        className="w-full max-w-[66.125rem] h-auto md:h-[21.625rem]" // Use max-w for better fitting, removed redundant mx-auto
+        className="w-[90%] md:w-[80%] max-w-[820px] drop-shadow-[0_0_10px_rgba(255,255,255,0.15)] relative z-10"
         imageClassName="object-contain" 
-        rounded="rounded-[1.875rem]"
+        rounded="rounded-[1.5rem]"
         animateZoom={true}
         zoomDelayMs={1000} // 1 second delay
         zoomDurationMs={3000} // 3 seconds duration

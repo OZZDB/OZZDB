@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { ArrowRightIcon, CalendarIcon } from './icons';
 import { SectionImage } from './SectionImage';
@@ -10,8 +9,8 @@ export const Hero: React.FC = () => {
       <SectionImage 
         src="./images/EloyText_visual_concept.svg" 
         alt="EloyText visual concept" 
-        className="w-[90%] md:w-[80%] max-w-[820px] drop-shadow-[0_0_10px_rgba(255,255,255,0.15)] relative z-10"
-        imageClassName="object-contain" 
+        className="w-full max-w-[1200px] h-[400px] md:h-[500px] object-cover transform scale-[1.2] transition-transform duration-[3000ms] delay-[1000ms] relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.15)]"
+        imageClassName="object-cover" 
         rounded="rounded-[1.5rem]"
         animateZoom={true}
         zoomDelayMs={1000} // 1 second delay

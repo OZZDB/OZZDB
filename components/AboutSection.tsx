@@ -19,7 +19,7 @@ export const AboutSection: React.FC = () => {
           </p>
           <div className="pt-4">
             <a
-              href="https://calendly.com/eloycrafting/15min"
+              href="https://calendly.com/eloytext/15min"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center font-['Nunito_Sans'] text-sm font-medium text-[rgba(255,255,255,0.7)] border border-[#5F476B] rounded-full px-6 py-2.5 transition-transform duration-200 ease-in-out hover:scale-105 hover:border-[#7B6187]"

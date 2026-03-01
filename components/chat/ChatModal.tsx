@@ -22,8 +22,8 @@ YOUR ROLE:
 - Greet visitors warmly and professionally
 - Understand what they need (service type, industry, urgency)
 - Qualify the inquiry (real project vs. browsing)
-- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloycrafting/15min
-- Collect name and email if they prefer async contact (email: lexconvey@gmail.com)
+- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloytext/15min
+- Collect name and email if they prefer async contact (email: eloytext@gmail.com)
 - Represent Eloy's voice: sharp, precise, warm, never salesy
 
 TONE: Professional but human. Bilingual — respond in the language the user writes in. No fluff. No filler phrases. Do not use markdown formatting in your responses.
@@ -210,7 +210,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
               Live chat is temporarily unavailable. Please email{' '}
               <a href="mailto:lexconvey@gmail.com" className="underline">lexconvey@gmail.com</a>{' '}
               or{' '}
-              <a href="https://calendly.com/eloycrafting/15min" target="_blank" rel="noopener noreferrer" className="underline">book a call</a>.
+              <a href="https://calendly.com/eloytext/15min" target="_blank" rel="noopener noreferrer" className="underline">book a call</a>.
             </div>
           )}
           {messages.map(msg => (

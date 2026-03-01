@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, Chat } from '@google/genai';
 import { SendIcon, CloseIcon } from '../icons';
 
 interface ChatModalProps {
@@ -14,6 +14,38 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+const SYSTEM_PROMPT = `You are Eloy's AI assistant on EloyText.com.
+
+Eloy is a lawyer and bilingual copywriter (English & Spanish) specializing in legal drafting, copywriting, and content strategy for law firms, fintech startups, immigration practices, and e-commerce brands.
+
+YOUR ROLE:
+- Greet visitors warmly and professionally
+- Understand what they need (service type, industry, urgency)
+- Qualify the inquiry (real project vs. browsing)
+- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloycrafting/15min
+- Collect name and email if they prefer async contact (email: lexconvey@gmail.com)
+- Represent Eloy's voice: sharp, precise, warm, never salesy
+
+TONE: Professional but human. Bilingual — respond in the language the user writes in. No fluff. No filler phrases. Do not use markdown formatting in your responses.
+
+SERVICES:
+1. Legal Drafting — contracts, policies, compliance copy, intake forms, terms & conditions, disclaimers, privacy policies, pleadings, motions, discovery documents
+2. Copywriting — landing pages, pitch decks, investor updates, product descriptions, brand messaging, SEO content
+3. Content Strategy — content planning, bilingual market positioning, tone-of-voice consulting, SaaS and fintech content systems
+
+PRIMARY CLIENTS: Law firms, immigration practices, fintech startups, e-commerce brands, NGOs, startups raising funding
+
+CALENDLY: https://calendly.com/eloycrafting/15min
+CONTACT EMAIL: lexconvey@gmail.com
+
+ESCALATION RULES:
+- If user mentions legal urgency, litigation, or court deadlines: flag as urgent and prompt them to email lexconvey@gmail.com with URGENT in the subject line immediately
+- If user asks about pricing: explain it is project-based and encourage booking a call for a custom quote — do not invent numbers
+- If user is not a fit (e.g. academic writing, personal blog, fiction): politely clarify scope and redirect
+- If you do not know something: say you will flag it for Eloy directly and ask for their email
+- Never make up services, prices, timelines, or client names
+- Never discuss Eloy's personal information beyond what is on the site`;
+
 export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -26,47 +58,40 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    // Access API_KEY using process.env
     const apiKey = process.env.API_KEY;
-
     if (!apiKey) {
-      console.warn("API_KEY is missing. Please ensure it is set as an environment variable. Chat functionality will be disabled.");
       setIsApiKeyMissing(true);
       return;
     }
     setIsApiKeyMissing(false);
     if (isOpen && !chat) {
       try {
-        const ai = new GoogleGenAI({ apiKey: apiKey });
+        const ai = new GoogleGenAI({ apiKey });
         const newChat = ai.chats.create({
           model: 'gemini-2.5-flash-preview-04-17',
           config: {
-            systemInstruction: "You are EloyText's friendly and helpful AI assistant. Your purpose is to provide information about EloyText's services (Legal Drafting, Copywriting, Content Strategy), help users understand how EloyText can benefit their business, and guide them on how to get started or schedule a consultation. Keep responses concise and professional. If a question is outside your scope, politely state that and suggest contacting EloyText directly or scheduling a consultation. Do not use markdown formatting in your responses.",
+            systemInstruction: SYSTEM_PROMPT,
           },
         });
         setChat(newChat);
         setMessages([
-          { 
-            id: 'initial-greeting', 
-            role: 'model', 
-            text: "Hello! I'm the EloyText AI assistant. How can I help you today regarding our legal-grade copywriting services?", 
-            timestamp: new Date() 
-          }
+          {
+            id: 'initial-greeting',
+            role: 'model',
+            text: "Hey! I'm Eloy's AI assistant. What are you working on? Tell me about your project and I'll point you in the right direction.",
+            timestamp: new Date(),
+          },
         ]);
-
       } catch (e) {
-        console.error("Failed to initialize chat:", e);
-        setError("Could not initialize chat service. Please try again later.");
-        // If initialization fails, it might be due to an invalid key or other issues, treat as if key is problematic for UI.
-        setIsApiKeyMissing(true); 
+        console.error('Failed to initialize chat:', e);
+        setError('Could not initialize chat service. Please try again later.');
+        setIsApiKeyMissing(true);
       }
     }
   }, [isOpen, chat]);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (isOpen && inputRef.current) inputRef.current.focus();
   }, [isOpen]);
 
   useEffect(() => {
@@ -90,7 +115,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
     setError(null);
 
     const modelTypingId = Date.now().toString() + '-model-typing';
-    setMessages(prev => [...prev, { id: modelTypingId, role: 'model', text: 'EloyText is typing...', timestamp: new Date() }]);
+    setMessages(prev => [
+      ...prev,
+      { id: modelTypingId, role: 'model', text: 'Typing...', timestamp: new Date() },
+    ]);
 
     try {
       const stream = await chat.sendMessageStream({ message: trimmedInput });
@@ -98,38 +126,45 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       let firstChunkReceived = false;
       let currentModelMessageId = '';
 
-
       for await (const chunk of stream) {
         if (!firstChunkReceived) {
           setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
           currentModelMessageId = Date.now().toString() + '-model';
-           setMessages(prev => [...prev, { id: currentModelMessageId, role: 'model', text: '', timestamp: new Date() }]);
+          setMessages(prev => [
+            ...prev,
+            { id: currentModelMessageId, role: 'model', text: '', timestamp: new Date() },
+          ]);
           firstChunkReceived = true;
         }
         streamedText += chunk.text;
         setMessages(prev =>
           prev.map(msg =>
-            msg.id === currentModelMessageId
-              ? { ...msg, text: streamedText }
-              : msg
+            msg.id === currentModelMessageId ? { ...msg, text: streamedText } : msg
           )
         );
       }
-      if (!firstChunkReceived) { 
-         setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
+      if (!firstChunkReceived) {
+        setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
       }
-
     } catch (apiError: any) {
       console.error('Error sending message:', apiError);
       setError('Sorry, something went wrong. Please try again.');
-      setMessages(prev => prev.filter(msg => msg.id !== modelTypingId)); 
-      setMessages(prev => [...prev, {id: Date.now().toString() + '-error', role: 'model', text: 'Sorry, I encountered an error. Please try again.', timestamp: new Date()}]);
+      setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now().toString() + '-error',
+          role: 'model',
+          text: 'Sorry, I hit an error. Please try again or email lexconvey@gmail.com directly.',
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
     }
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -140,19 +175,25 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[1005] flex items-end justify-end sm:p-6" 
-      aria-modal="true" 
+    <div
+      className="fixed inset-0 z-[1005] flex items-end justify-end sm:p-6"
+      aria-modal="true"
       role="dialog"
       aria-labelledby="chat-modal-title"
     >
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative z-10 flex flex-col w-full h-full max-h-[90vh] sm:max-h-[75vh] sm:max-w-md bg-[#17254A] shadow-2xl rounded-t-2xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out transform translate-y-full opacity-0 data-[open=true]:translate-y-0 data-[open=true]:opacity-100" data-open={isOpen}>
+      <div
+        className="relative z-10 flex flex-col w-full h-full max-h-[90vh] sm:max-h-[75vh] sm:max-w-md bg-[#17254A] shadow-2xl rounded-t-2xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out"
+        data-open={isOpen}
+      >
         {/* Header */}
         <header className="flex items-center justify-between p-4 border-b border-[#5F476B]">
-          <h2 id="chat-modal-title" className="text-lg font-semibold text-gradient text-gradient-primary font-['Nunito_Sans']">
-            EloyText Live Chat
-          </h2>
+          <div>
+            <h2 id="chat-modal-title" className="text-lg font-semibold text-gradient text-gradient-primary font-['Nunito_Sans']">
+              Chat with Eloy's AI
+            </h2>
+            <p className="text-xs text-gray-400 font-['Nunito_Sans'] mt-0.5">Typically replies instantly</p>
+          </div>
           <button
             onClick={onClose}
             className="text-[#A464A1] hover:text-white transition-colors p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-[#7B6187]"
@@ -165,15 +206,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
         {/* Messages */}
         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
           {isApiKeyMissing && (
-             <div className="p-3 my-2 text-sm text-yellow-200 bg-yellow-700/50 rounded-md">
-              Live chat is temporarily unavailable. The API key is not configured.
+            <div className="p-3 my-2 text-sm text-yellow-200 bg-yellow-700/50 rounded-md">
+              Live chat is temporarily unavailable. Please email{' '}
+              <a href="mailto:lexconvey@gmail.com" className="underline">lexconvey@gmail.com</a>{' '}
+              or{' '}
+              <a href="https://calendly.com/eloycrafting/15min" target="_blank" rel="noopener noreferrer" className="underline">book a call</a>.
             </div>
           )}
           {messages.map(msg => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
                 className={`max-w-[80%] p-3 rounded-xl ${
                   msg.role === 'user'
@@ -182,7 +223,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-gray-300' : 'text-gray-400'} text-opacity-70`}>
+                <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-gray-300' : 'text-gray-400'}`}>
                   {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -192,9 +233,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {error && !isApiKeyMissing && (
-          <div className="p-3 mx-4 mb-2 text-sm text-red-200 bg-red-700/50 rounded-md">
-            {error}
-          </div>
+          <div className="p-3 mx-4 mb-2 text-sm text-red-200 bg-red-700/50 rounded-md">{error}</div>
         )}
 
         {/* Input */}
@@ -205,11 +244,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isApiKeyMissing ? "Chat unavailable (API key missing)" : "Type your message..."}
+              placeholder={isApiKeyMissing ? 'Chat unavailable' : 'Type your message...'}
               className="flex-1 p-2.5 bg-[#2A2E45] border border-[#5F476B] rounded-lg resize-none focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] focus:outline-none text-sm placeholder-gray-400 text-white min-h-[44px] max-h-28"
               rows={1}
               disabled={isLoading || isApiKeyMissing}
-              aria-label={isApiKeyMissing ? "Chat input disabled due to missing API key" : "Type your message"}
+              aria-label="Type your message"
             />
             <button
               type="submit"

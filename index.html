@@ -3,34 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EloyText</title>
+  <title>EloyText — Legal Precision. Copy That Converts.</title>
+  <meta name="description" content="Bilingual legal copywriting for law firms, fintech startups, immigration practices, and e-commerce brands. English & Spanish. Precision by design." />
+  <meta property="og:title" content="EloyText — Legal Precision. Copy That Converts." />
+  <meta property="og:description" content="Bilingual copywriting where legal expertise meets creative strategy. Law firms, fintech, immigration, and e-commerce." />
+  <meta property="og:url" content="https://eloytext.netlify.app/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EloyText — Legal Precision. Copy That Converts." />
+  <meta name="twitter:description" content="Bilingual copywriting where legal expertise meets creative strategy." />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Quattrocento:wght@400;700&family=Sedan:wght@400&family=Inter:wght@400&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Nunito Sans', sans-serif; /* Default font */
+      font-family: 'Nunito Sans', sans-serif;
       min-height: 100vh;
       background-image: linear-gradient(55deg, #431F54 0%, #151226 60%, #17254A 100%);
-      color: #FFFFFF; /* Default text color */
-      margin: 0; /* Ensure no default margin */
-      overflow-x: hidden; /* Prevent horizontal scroll from SVG if any slight overflow */
+      color: #FFFFFF;
+      margin: 0;
+      overflow-x: hidden;
     }
-    /* Custom scrollbar for better aesthetics (optional, WebKit only) */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #151226;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #5F476B;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #7B6187;
-    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #151226; }
+    ::-webkit-scrollbar-thumb { background: #5F476B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #7B6187; }
     .text-gradient {
       background-clip: text;
       -webkit-background-clip: text;
@@ -40,23 +38,21 @@
     .text-gradient-primary {
       background-image: linear-gradient(45deg, rgba(255,255,255,0.412) 0%, #FFFFFF 67%);
     }
-     .text-gradient-secondary {
+    .text-gradient-secondary {
       background-image: linear-gradient(297deg, rgba(255,255,255,0.412) 0%, #FFFFFF 31%);
     }
-
     #animated-background {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 0; /* Ensure it's behind other content */
-      pointer-events: none; 
+      z-index: 0;
+      pointer-events: none;
     }
-
     #root {
-      position: relative; /* Establishes a stacking context */
-      z-index: 1;       /* Ensures #root is above elements with lower or no z-index, but below chat modal */
+      position: relative;
+      z-index: 1;
     }
   </style>
 <script type="importmap">
@@ -71,12 +67,12 @@
 </script>
 </head>
 <body>
-  <!-- Netlify Form Detection: A hidden static form for Netlify's build bots. -->
+  <!-- Netlify Form Detection -->
   <form name="contact" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="contact" />
     <input type="text" name="name" />
     <input type="email" name="email" />
-    <input type="text" name="subject" />
+    <input type="text" name="service" />
     <textarea name="message"></textarea>
     <input name="bot-field" />
   </form>

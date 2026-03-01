@@ -4,7 +4,7 @@ import { SendIcon } from './icons';
 interface FormData {
   name: string;
   email: string;
-  subject: string;
+  service: string;
   message: string;
 }
 
@@ -14,18 +14,17 @@ interface FormErrors {
   message?: string;
 }
 
-// Helper function to encode form data for Netlify
 const encode = (data: { [key: string]: any }) => {
   return Object.keys(data)
-    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-    .join("&");
-}
+    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+    .join('&');
+};
 
 export const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    subject: '',
+    service: '',
     message: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -33,7 +32,9 @@ export const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
@@ -50,7 +51,6 @@ export const ContactForm: React.FC = () => {
       newErrors.email = 'Email address is invalid.';
     }
     if (!formData.message.trim()) newErrors.message = 'Message is required.';
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -64,29 +64,20 @@ export const ContactForm: React.FC = () => {
     setSubmissionError(null);
 
     try {
-      await fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encode({
-          "form-name": "contact",
-          ...formData,
-        }),
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encode({ 'form-name': 'contact', ...formData }),
       });
-      
       setIsSubmitting(false);
       setIsSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', service: '', message: '' });
       setErrors({});
-
-      // Hide success message after a few seconds
-      setTimeout(() => {
-          setIsSubmitted(false);
-      }, 5000);
-
+      setTimeout(() => setIsSubmitted(false), 6000);
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error('Form submission error:', error);
       setIsSubmitting(false);
-      setSubmissionError("Sorry, there was an error sending your message. Please try again later.");
+      setSubmissionError('Sorry, there was an error sending your message. Please try again later.');
     }
   };
 
@@ -96,12 +87,12 @@ export const ContactForm: React.FC = () => {
         Get In Touch
       </h2>
       <p className="font-['Quattrocento'] text-lg sm:text-xl text-gradient text-gradient-primary max-w-2xl mx-auto mb-10 md:mb-12">
-        Have a question or a project in mind? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.
+        Have a project in mind? Drop a message. Eloy responds within 24 hours — or the AI gets there first.
       </p>
 
       {isSubmitted && (
         <div className="mb-6 p-4 bg-green-700/30 border border-green-500 text-green-200 rounded-lg max-w-md mx-auto" role="alert">
-          Thank you! Your message has been received.
+          Got it. Eloy (or his AI) will be in touch shortly.
         </div>
       )}
 
@@ -111,7 +102,7 @@ export const ContactForm: React.FC = () => {
         </div>
       )}
 
-      <form 
+      <form
         onSubmit={handleSubmit}
         name="contact"
         method="POST"
@@ -119,17 +110,15 @@ export const ContactForm: React.FC = () => {
         data-netlify-honeypot="bot-field"
         className="max-w-xl mx-auto space-y-6 text-left"
       >
-        {/* Hidden input for Netlify form name */}
         <input type="hidden" name="form-name" value="contact" />
         <p className="hidden">
-          <label>
-            Don’t fill this out if you're human: <input name="bot-field" />
-          </label>
+          <label>Don't fill this out if you're human: <input name="bot-field" /></label>
         </p>
-        
+
+        {/* Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
-            Full Name <span className="text-red-400">*</span>
+            Your Name <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -140,14 +129,14 @@ export const ContactForm: React.FC = () => {
             className={`w-full p-3 bg-[#2A2E45] border ${errors.name ? 'border-red-500' : 'border-[#5F476B]'} rounded-lg focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] outline-none placeholder-gray-400 text-white transition-colors`}
             placeholder="e.g. Jane Doe"
             aria-required="true"
-            aria-describedby={errors.name ? "name-error" : undefined}
           />
-          {errors.name && <p id="name-error" className="mt-1 text-xs text-red-400">{errors.name}</p>}
+          {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
         </div>
 
+        {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
-            Email Address <span className="text-red-400">*</span>
+            Your Email <span className="text-red-400">*</span>
           </label>
           <input
             type="email"
@@ -158,42 +147,46 @@ export const ContactForm: React.FC = () => {
             className={`w-full p-3 bg-[#2A2E45] border ${errors.email ? 'border-red-500' : 'border-[#5F476B]'} rounded-lg focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] outline-none placeholder-gray-400 text-white transition-colors`}
             placeholder="you@example.com"
             aria-required="true"
-            aria-describedby={errors.email ? "email-error" : undefined}
           />
-          {errors.email && <p id="email-error" className="mt-1 text-xs text-red-400">{errors.email}</p>}
+          {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
         </div>
 
+        {/* Service Dropdown */}
         <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
-            Subject
+          <label htmlFor="service" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
+            What do you need?
           </label>
-          <input
-            type="text"
-            name="subject"
-            id="subject"
-            value={formData.subject}
+          <select
+            name="service"
+            id="service"
+            value={formData.service}
             onChange={handleChange}
-            className="w-full p-3 bg-[#2A2E45] border border-[#5F476B] rounded-lg focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] outline-none placeholder-gray-400 text-white transition-colors"
-            placeholder="Regarding your services..."
-          />
+            className="w-full p-3 bg-[#2A2E45] border border-[#5F476B] rounded-lg focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] outline-none text-white transition-colors appearance-none"
+          >
+            <option value="" className="bg-[#2A2E45]">Select a service...</option>
+            <option value="Legal Drafting" className="bg-[#2A2E45]">Legal Drafting</option>
+            <option value="Copywriting" className="bg-[#2A2E45]">Copywriting</option>
+            <option value="Content Strategy" className="bg-[#2A2E45]">Content Strategy</option>
+            <option value="Not Sure Yet" className="bg-[#2A2E45]">Not Sure Yet</option>
+          </select>
         </div>
 
+        {/* Message */}
         <div>
           <label htmlFor="message" className="block text-sm font-medium text-gradient text-gradient-primary mb-1">
-            Your Message <span className="text-red-400">*</span>
+            Tell me about your project <span className="text-red-400">*</span>
           </label>
           <textarea
             name="message"
             id="message"
-            rows={4}
+            rows={5}
             value={formData.message}
             onChange={handleChange}
             className={`w-full p-3 bg-[#2A2E45] border ${errors.message ? 'border-red-500' : 'border-[#5F476B]'} rounded-lg focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] outline-none placeholder-gray-400 text-white resize-none transition-colors`}
-            placeholder="Tell us more about your needs..."
+            placeholder="Industry, audience, what's broken, what you need..."
             aria-required="true"
-            aria-describedby={errors.message ? "message-error" : undefined}
           />
-          {errors.message && <p id="message-error" className="mt-1 text-xs text-red-400">{errors.message}</p>}
+          {errors.message && <p className="mt-1 text-xs text-red-400">{errors.message}</p>}
         </div>
 
         <div className="text-center pt-2">
@@ -210,7 +203,7 @@ export const ContactForm: React.FC = () => {
             ) : (
               <SendIcon className="mr-2 h-5 w-5 fill-white" />
             )}
-            {isSubmitting ? 'Sending...' : 'Send Message'}
+            {isSubmitting ? 'Sending...' : 'Send It →'}
           </button>
         </div>
       </form>

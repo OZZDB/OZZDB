@@ -49,7 +49,7 @@ export const HowItWorks: React.FC = () => {
       </div>
       <div className="text-center pt-4">
         <a
-          href="https://calendly.com/eloycrafting/15min"
+          href="https://calendly.com/eloytext/15min"
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center justify-center px-10 py-4 text-lg font-medium text-[rgba(255,255,255,0.831)] border border-[#0057FF] rounded-full transition-transform duration-200 ease-in-out hover:scale-105"

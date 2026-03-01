@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
       <ul className="flex justify-center items-center space-x-6">
         <li>
           <a
-            href="https://calendly.com/eloycrafting/15min"
+            href="https://calendly.com/eloytext/15min"
             target="_blank"
             rel="noopener noreferrer"
             className="group block h-10 w-10 p-1 rounded-full hover:scale-110 transition-transform"
@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
         </li>
         <li>
           <a
-            href="mailto:lexconvey@gmail.com"
+            href="mailto:eloytext@gmail.com"
             className="group block h-10 w-10 p-1 rounded-full hover:scale-110 transition-transform"
             aria-label="Send an email"
           >
@@ -32,7 +32,7 @@ export const Footer: React.FC = () => {
       <div className="text-center">
         <span className="inline-block relative group">
           <a
-            href="mailto:lexconvey@gmail.com"
+            href="mailto:eloytext@gmail.com"
             className="text-xs text-[rgba(255,255,255,0.498)] px-2 py-1 transition-all duration-250 ease-in-out group-hover:text-white group-hover:scale-110 group-hover:translate-y-[-0.05rem] relative z-10"
           >
             <span className="opacity-100 group-hover:opacity-0 transition-opacity duration-250 ease-in-out">(</span>

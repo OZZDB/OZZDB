@@ -24,7 +24,7 @@ export const Hero: React.FC = () => {
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
         <a
-          href="https://calendly.com/eloycrafting/15min"
+          href="https://calendly.com/eloytext/15min"
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-base sm:text-lg font-medium text-[rgba(255,255,255,0.831)] border border-[#0057FF] rounded-full transition-transform duration-200 ease-in-out hover:scale-105"

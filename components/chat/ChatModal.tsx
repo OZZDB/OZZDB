@@ -35,8 +35,8 @@ SERVICES:
 
 PRIMARY CLIENTS: Law firms, immigration practices, fintech startups, e-commerce brands, NGOs, startups raising funding
 
-CALENDLY: https://calendly.com/eloycrafting/15min
-CONTACT EMAIL: lexconvey@gmail.com
+CALENDLY: https://calendly.com/eloytext/15min
+CONTACT EMAIL: eloytext@gmail.com
 
 ESCALATION RULES:
 - If user mentions legal urgency, litigation, or court deadlines: flag as urgent and prompt them to email lexconvey@gmail.com with URGENT in the subject line immediately
@@ -58,7 +58,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_API_KEY;
     if (!apiKey) {
       setIsApiKeyMissing(true);
       return;
@@ -155,7 +155,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
         {
           id: Date.now().toString() + '-error',
           role: 'model',
-          text: 'Sorry, I hit an error. Please try again or email lexconvey@gmail.com directly.',
+          text: 'Sorry, I hit an error. Please try again or email eloytext@gmail.com directly.',
           timestamp: new Date(),
         },
       ]);
@@ -208,7 +208,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
           {isApiKeyMissing && (
             <div className="p-3 my-2 text-sm text-yellow-200 bg-yellow-700/50 rounded-md">
               Live chat is temporarily unavailable. Please email{' '}
-              <a href="mailto:lexconvey@gmail.com" className="underline">lexconvey@gmail.com</a>{' '}
+              <a href="mailto:eloytext@gmail.com" className="underline">eloytext@gmail.com</a>{' '}
               or{' '}
               <a href="https://calendly.com/eloytext/15min" target="_blank" rel="noopener noreferrer" className="underline">book a call</a>.
             </div>

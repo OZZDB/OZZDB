@@ -58,21 +58,33 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // 1. Get the key using Vite's syntax
     const apiKey = import.meta.env.VITE_API_KEY;
+
     if (!apiKey) {
       setIsApiKeyMissing(true);
       return;
     }
+
     setIsApiKeyMissing(false);
+
     if (isOpen && !chat) {
       try {
-        const ai = new GoogleGenAI({ apiKey });
-        const newChat = ai.chats.create({
-          model: 'gemini-2.5-flash-preview-04-17',
-          config: {
-            systemInstruction: SYSTEM_PROMPT,
-          },
+        // 2. Initialize using the correct Class Name
+        const genAI = new GoogleGenerativeAI(apiKey);
+        
+        // 3. Set the model and instructions in one place
+        const model = genAI.getGenerativeModel({ 
+          model: 'gemini-1.5-flash',
+          systemInstruction: SYSTEM_PROMPT,
         });
+
+        // 4. Start the chat session
+        const newChat = model.startChat({
+          history: [],
+        });
+
+        // 5. Update your website state
         setChat(newChat);
         setMessages([
           {
@@ -85,7 +97,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       } catch (e) {
         console.error('Failed to initialize chat:', e);
         setError('Could not initialize chat service. Please try again later.');
-        setIsApiKeyMissing(true);
+        // If it fails here, it's often a connection or key issue
+        setIsApiKeyMissing(true); 
       }
     }
   }, [isOpen, chat]);

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { GoogleGenAI, Chat } from '@google/genai';
 import { SendIcon, CloseIcon } from '../icons';
 
 interface ChatModalProps {
@@ -14,94 +13,28 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const SYSTEM_PROMPT = `You are Eloy's AI assistant on EloyText.com.
-
-Eloy is a lawyer and bilingual copywriter (English & Spanish) specializing in legal drafting, copywriting, and content strategy for law firms, fintech startups, immigration practices, and e-commerce brands.
-
-YOUR ROLE:
-- Greet visitors warmly and professionally
-- Understand what they need (service type, industry, urgency)
-- Qualify the inquiry (real project vs. browsing)
-- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloytext/15min
-- Collect name and email if they prefer async contact (email: eloytext@gmail.com)
-- Represent Eloy's voice: sharp, precise, warm, never salesy
-
-TONE: Professional but human. Bilingual — respond in the language the user writes in. No fluff. No filler phrases. Do not use markdown formatting in your responses.
-
-SERVICES:
-1. Legal Drafting — contracts, policies, compliance copy, intake forms, terms & conditions, disclaimers, privacy policies, pleadings, motions, discovery documents
-2. Copywriting — landing pages, pitch decks, investor updates, product descriptions, brand messaging, SEO content
-3. Content Strategy — content planning, bilingual market positioning, tone-of-voice consulting, SaaS and fintech content systems
-
-PRIMARY CLIENTS: Law firms, immigration practices, fintech startups, e-commerce brands, NGOs, startups raising funding
-
-CALENDLY: https://calendly.com/eloytext/15min
-CONTACT EMAIL: eloytext@gmail.com
-
-ESCALATION RULES:
-- If user mentions legal urgency, litigation, or court deadlines: flag as urgent and prompt them to email lexconvey@gmail.com with URGENT in the subject line immediately
-- If user asks about pricing: explain it is project-based and encourage booking a call for a custom quote — do not invent numbers
-- If user is not a fit (e.g. academic writing, personal blog, fiction): politely clarify scope and redirect
-- If you do not know something: say you will flag it for Eloy directly and ask for their email
-- Never make up services, prices, timelines, or client names
-- Never discuss Eloy's personal information beyond what is on the site`;
-
 export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chat, setChat] = useState<Chat | null>(null);
-  const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Show greeting when chat opens for the first time
   useEffect(() => {
-    // 1. Get the key using Vite's syntax
-    const apiKey = import.meta.env.VITE_API_KEY;
-
-    if (!apiKey) {
-      setIsApiKeyMissing(true);
-      return;
+    if (isOpen && messages.length === 0) {
+      setMessages([
+        {
+          id: 'initial-greeting',
+          role: 'model',
+          text: "Hey! I'm Eloy's AI assistant. What are you working on? Tell me about your project and I'll point you in the right direction.",
+          timestamp: new Date(),
+        },
+      ]);
     }
-
-    setIsApiKeyMissing(false);
-
-    if (isOpen && !chat) {
-      try {
-        // 2. Initialize using the correct Class Name
-        const genAI = new GoogleGenerativeAI(apiKey);
-        
-        // 3. Set the model and instructions in one place
-        const model = genAI.getGenerativeModel({ 
-          model: 'gemini-1.5-flash',
-          systemInstruction: SYSTEM_PROMPT,
-        });
-
-        // 4. Start the chat session
-        const newChat = model.startChat({
-          history: [],
-        });
-
-        // 5. Update your website state
-        setChat(newChat);
-        setMessages([
-          {
-            id: 'initial-greeting',
-            role: 'model',
-            text: "Hey! I'm Eloy's AI assistant. What are you working on? Tell me about your project and I'll point you in the right direction.",
-            timestamp: new Date(),
-          },
-        ]);
-      } catch (e) {
-        console.error('Failed to initialize chat:', e);
-        setError('Could not initialize chat service. Please try again later.');
-        // If it fails here, it's often a connection or key issue
-        setIsApiKeyMissing(true); 
-      }
-    }
-  }, [isOpen, chat]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) inputRef.current.focus();
@@ -114,7 +47,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     const trimmedInput = inputValue.trim();
-    if (!trimmedInput || isLoading || !chat || isApiKeyMissing) return;
+    if (!trimmedInput || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString() + '-user',
@@ -122,56 +55,61 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       text: trimmedInput,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, userMessage]);
+
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputValue('');
     setIsLoading(true);
     setError(null);
 
-    const modelTypingId = Date.now().toString() + '-model-typing';
+    const typingId = Date.now().toString() + '-typing';
     setMessages(prev => [
       ...prev,
-      { id: modelTypingId, role: 'model', text: 'Typing...', timestamp: new Date() },
+      { id: typingId, role: 'model', text: 'Typing...', timestamp: new Date() },
     ]);
 
     try {
-      const stream = await chat.sendMessageStream({ message: trimmedInput });
-      let streamedText = '';
-      let firstChunkReceived = false;
-      let currentModelMessageId = '';
+      const response = await fetch('/.netlify/functions/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages
+            .filter(m => m.id !== 'initial-greeting')
+            .map(m => ({ role: m.role, text: m.text })),
+        }),
+      });
 
-      for await (const chunk of stream) {
-        if (!firstChunkReceived) {
-          setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
-          currentModelMessageId = Date.now().toString() + '-model';
-          setMessages(prev => [
-            ...prev,
-            { id: currentModelMessageId, role: 'model', text: '', timestamp: new Date() },
-          ]);
-          firstChunkReceived = true;
-        }
-        streamedText += chunk.text;
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === currentModelMessageId ? { ...msg, text: streamedText } : msg
-          )
-        );
+      setMessages(prev => prev.filter(m => m.id !== typingId));
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
       }
-      if (!firstChunkReceived) {
-        setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
-      }
-    } catch (apiError: any) {
-      console.error('Error sending message:', apiError);
-      setError('Sorry, something went wrong. Please try again.');
-      setMessages(prev => prev.filter(msg => msg.id !== modelTypingId));
+
+      const data = await response.json();
+      const replyText = data.text || 'Sorry, I could not generate a response.';
+
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now().toString() + '-model',
+          role: 'model',
+          text: replyText,
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (err: any) {
+      console.error('Chat error:', err);
+      setMessages(prev => prev.filter(m => m.id !== typingId));
       setMessages(prev => [
         ...prev,
         {
           id: Date.now().toString() + '-error',
           role: 'model',
-          text: 'Sorry, I hit an error. Please try again or email eloytext@gmail.com directly.',
+          text: 'Sorry, something went wrong. Please try again or email eloytext@gmail.com directly.',
           timestamp: new Date(),
         },
       ]);
+      setError('Could not reach the chat service. Please try again.');
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -195,10 +133,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       aria-labelledby="chat-modal-title"
     >
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose}></div>
-      <div
-        className="relative z-10 flex flex-col w-full h-full max-h-[90vh] sm:max-h-[75vh] sm:max-w-md bg-[#17254A] shadow-2xl rounded-t-2xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out"
-        data-open={isOpen}
-      >
+      <div className="relative z-10 flex flex-col w-full h-full max-h-[90vh] sm:max-h-[75vh] sm:max-w-md bg-[#17254A] shadow-2xl rounded-t-2xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out">
+
         {/* Header */}
         <header className="flex items-center justify-between p-4 border-b border-[#5F476B]">
           <div>
@@ -218,14 +154,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
 
         {/* Messages */}
         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-          {isApiKeyMissing && (
-            <div className="p-3 my-2 text-sm text-yellow-200 bg-yellow-700/50 rounded-md">
-              Live chat is temporarily unavailable. Please email{' '}
-              <a href="mailto:eloytext@gmail.com" className="underline">eloytext@gmail.com</a>{' '}
-              or{' '}
-              <a href="https://calendly.com/eloytext/15min" target="_blank" rel="noopener noreferrer" className="underline">book a call</a>.
-            </div>
-          )}
           {messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -245,7 +173,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {error && !isApiKeyMissing && (
+        {error && (
           <div className="p-3 mx-4 mb-2 text-sm text-red-200 bg-red-700/50 rounded-md">{error}</div>
         )}
 
@@ -257,15 +185,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isApiKeyMissing ? 'Chat unavailable' : 'Type your message...'}
+              placeholder="Type your message..."
               className="flex-1 p-2.5 bg-[#2A2E45] border border-[#5F476B] rounded-lg resize-none focus:ring-2 focus:ring-[#7B6187] focus:border-[#7B6187] focus:outline-none text-sm placeholder-gray-400 text-white min-h-[44px] max-h-28"
               rows={1}
-              disabled={isLoading || isApiKeyMissing}
+              disabled={isLoading}
               aria-label="Type your message"
             />
             <button
               type="submit"
-              disabled={isLoading || !inputValue.trim() || isApiKeyMissing}
+              disabled={isLoading || !inputValue.trim()}
               className="p-2.5 rounded-full bg-[#0057FF] text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#151226] focus:ring-[#0057FF]"
               aria-label="Send message"
             >

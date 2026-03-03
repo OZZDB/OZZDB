@@ -1,4 +1,4 @@
-// netlify/functions/chat.js
+// netlify/functions/chat.js - v2
 
 const SYSTEM_PROMPT = `You are Eloy's AI assistant on EloyText.com.
 

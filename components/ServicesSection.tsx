@@ -37,7 +37,7 @@ export const ServicesSection: React.FC = () => {
       <h2 className="font-['Quattrocento'] text-4xl sm:text-5xl md:text-6xl text-center font-bold text-gradient text-gradient-secondary">
         What We Offer
       </h2>
-      <div className="border-t border-b border-[#5F476B] py-10>
+      <div className="border-t border-b border-[#5F476B] py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-y-0 md:gap-x-8">
           {services.map((service, index) => (
             <ServiceCard

@@ -45,7 +45,7 @@ export const ServicesSection: React.FC = () => {
               title={service.title}
               description={service.description}
               className={index > 0 ? 'md:border-l md:border-[#5F476B] md:pl-8' : 'md:pr-4'}
-              titleClassName="font-['Sedan'] text-3xl md:text-4xl tracking-wider leading-snug text-gradient text-gradient-primary mb-6"
+              titleClassName="font-['Sedan'] text-3xl md:text-4xl tracking-wider leading-snug text-gradient text-gradient-primary mb-6 text-center"
               paragraphClassName="font-['Quattrocento'] text-base sm:text-lg leading-relaxed text-gradient text-gradient-primary text-center"
             />
           ))}

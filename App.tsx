@@ -39,7 +39,7 @@ const App: React.FC = () => {
   return (
     <div>
       <main className="flex flex-col items-center overflow-x-hidden">
-        <div className="w-full max-w-[68rem] px-6 sm:px-8 md:px-12 py-16 sm:py-24 md:py-36 space-y-10 md:space-y-16 lg:space-y-24">
+        <div className="w-full max-w-[68rem] px-6 sm:px-8 md:px-12 py-16 sm:py-24 md:py-36 space-y-10 md:space-y-14 lg:space-y-16">
 
           {/* HERO */}
           <div className={`transition-opacity duration-[375ms] ease-in-out ${heroVisible ? 'opacity-100' : 'opacity-0'}`}>

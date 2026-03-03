@@ -40,7 +40,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
 
   // ✅ Handle CORS preflight — browsers send OPTIONS before POST
   // Without this the browser blocks the request before it even reaches your logic

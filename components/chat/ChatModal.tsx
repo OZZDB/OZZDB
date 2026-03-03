@@ -235,4 +235,4 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       </div>
     </div>
   );
-};
+}; 

@@ -65,10 +65,16 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
     const typingId = Date.now().toString() + '-typing';
     setMessages(prev => [
       ...prev,
-      { id: typingId, role: 'model', text: 'Typing...', timestamp: new Date() },
+      {
+        id: typingId,
+        role: 'model',
+        text: 'Typing...',
+        timestamp: new Date(),
+      },
     ]);
 
     try {
+      // ✅ Calls serverless function — API key never touches the browser
       const response = await fetch('/.netlify/functions/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,16 +138,24 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       role="dialog"
       aria-labelledby="chat-modal-title"
     >
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose}></div>
+      <div
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="relative z-10 flex flex-col w-full h-full max-h-[90vh] sm:max-h-[75vh] sm:max-w-md bg-[#17254A] shadow-2xl rounded-t-2xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out">
 
         {/* Header */}
         <header className="flex items-center justify-between p-4 border-b border-[#5F476B]">
           <div>
-            <h2 id="chat-modal-title" className="text-lg font-semibold text-gradient text-gradient-primary font-['Nunito_Sans']">
+            <h2
+              id="chat-modal-title"
+              className="text-lg font-semibold text-gradient text-gradient-primary font-['Nunito_Sans']"
+            >
               Chat with Eloy's AI
             </h2>
-            <p className="text-xs text-gray-400 font-['Nunito_Sans'] mt-0.5">Typically replies instantly</p>
+            <p className="text-xs text-gray-400 font-['Nunito_Sans'] mt-0.5">
+              Typically replies instantly
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -155,7 +169,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
         {/* Messages */}
         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
           {messages.map(msg => (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div
+              key={msg.id}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
               <div
                 className={`max-w-[80%] p-3 rounded-xl ${
                   msg.role === 'user'
@@ -164,8 +181,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-gray-300' : 'text-gray-400'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <p
+                  className={`text-xs mt-1 ${
+                    msg.role === 'user' ? 'text-gray-300' : 'text-gray-400'
+                  }`}
+                >
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </p>
               </div>
             </div>
@@ -173,12 +197,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Error Banner */}
         {error && (
-          <div className="p-3 mx-4 mb-2 text-sm text-red-200 bg-red-700/50 rounded-md">{error}</div>
+          <div className="p-3 mx-4 mb-2 text-sm text-red-200 bg-red-700/50 rounded-md">
+            {error}
+          </div>
         )}
 
         {/* Input */}
-        <form onSubmit={handleSendMessage} className="p-4 border-t border-[#5F476B] bg-[#151226]">
+        <form
+          onSubmit={handleSendMessage}
+          className="p-4 border-t border-[#5F476B] bg-[#151226]"
+        >
           <div className="flex items-center space-x-2">
             <textarea
               ref={inputRef}
@@ -201,6 +231,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
+
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+// netlify/functions/chat.js
+
 const SYSTEM_PROMPT = `You are Eloy's AI assistant on EloyText.com.
 
 Eloy is a lawyer and bilingual copywriter (English & Spanish) specializing in legal drafting, copywriting, and content strategy for law firms, fintech startups, immigration practices, and e-commerce brands.
@@ -6,7 +8,7 @@ YOUR ROLE:
 - Greet visitors warmly and professionally
 - Understand what they need (service type, industry, urgency)
 - Qualify the inquiry (real project vs. browsing)
-- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloycrafting/15min
+- Direct them to book a free 15-min call via Calendly if they're ready: https://calendly.com/eloytext/15min
 - Collect name and email if they prefer async contact (email: eloytext@gmail.com)
 - Represent Eloy's voice: sharp, precise, warm, never salesy
 
@@ -19,7 +21,7 @@ SERVICES:
 
 PRIMARY CLIENTS: Law firms, immigration practices, fintech startups, e-commerce brands, NGOs, startups raising funding
 
-CALENDLY: https://calendly.com/eloycrafting/15min
+CALENDLY: https://calendly.com/eloytext/15min
 CONTACT EMAIL: eloytext@gmail.com
 
 ESCALATION RULES:
@@ -30,82 +32,151 @@ ESCALATION RULES:
 - Never make up services, prices, timelines, or client names
 - Never discuss Eloy's personal information beyond what is on the site`;
 
+// ✅ Shared CORS headers applied to every response
+const CORS_HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 exports.handler = async (event) => {
+
+  // ✅ Handle CORS preflight — browsers send OPTIONS before POST
+  // Without this the browser blocks the request before it even reaches your logic
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: CORS_HEADERS,
+      body: "",
+    };
+  }
+
   // Only allow POST
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
   try {
-    const { messages } = JSON.parse(event.body);
-
-    if (!messages || !Array.isArray(messages)) {
+    // Validate request body exists
+    if (!event.body) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'messages array is required' }),
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Request body is missing" }),
       };
     }
 
+    const { messages } = JSON.parse(event.body);
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "A valid messages array is required" }),
+      };
+    }
+
+    // Validate API key exists server-side — never exposed to browser
     if (!process.env.GEMINI_API_KEY) {
-      console.warn('GEMINI_API_KEY is missing or undefined');
+      console.warn("GEMINI_API_KEY is missing or undefined");
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Chat service is not configured' }),
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Chat service is not configured" }),
       };
     }
 
-    // Build contents array for Gemini — prepend system prompt as first user/model turn
+    // Build Gemini contents array
+    // System prompt is injected as the first user/model exchange
+    // This is the correct pattern for Gemini — it does not have a native system role
     const contents = [
       {
-        role: 'user',
+        role: "user",
         parts: [{ text: SYSTEM_PROMPT }],
       },
       {
-        role: 'model',
-        parts: [{ text: "Understood. I'm ready to assist as Eloy's AI assistant." }],
+        role: "model",
+        parts: [{ text: "Understood. I am ready to assist as Eloy's AI assistant." }],
       },
       ...messages.map((msg) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
+        role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.text }],
       })),
     ];
 
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' +
-        process.env.GEMINI_API_KEY,
+    // ✅ Call Gemini API — key stays server-side in URL param, never in browser
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          // ✅ generationConfig prevents runaway responses and controls quality
+          generationConfig: {
+            temperature: 0.7, // Balanced: professional but natural
+            maxOutputTokens: 1024, // Prevents excessively long replies
+            topP: 0.9,
+            topK: 40,
+          },
+          // ✅ Safety settings — appropriate for a professional business assistant
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE",
+            },
+          ],
+        }),
       }
     );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API error:', response.status, errText);
+    // Handle Gemini API-level errors
+    if (!geminiResponse.ok) {
+      const errText = await geminiResponse.text();
+      console.error("Gemini API error:", geminiResponse.status, errText);
       return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: 'Gemini API request failed' }),
+        statusCode: geminiResponse.status,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Gemini API request failed" }),
       };
     }
 
-    const data = await response.json();
+    const data = await geminiResponse.json();
+
+    // Safely extract reply text with fallback
     const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "I was unable to generate a response. Please try again.";
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: CORS_HEADERS,
       body: JSON.stringify({ text }),
     };
+
   } catch (error) {
-    console.error('Serverless function error:', error);
+    console.error("Serverless function error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error' }),
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: "Internal server error" }),
     };
   }
 };

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChatBubbleIcon, CloseIcon } from '../icons';
+import { MessageCircle, X } from 'lucide-react';
+import { CloseIcon } from '../icons';
 
 interface LiveChatFABProps {
   onToggleChat: () => void;
@@ -23,7 +24,7 @@ export const LiveChatFAB: React.FC<LiveChatFABProps> = ({ onToggleChat, isChatOp
         {isChatOpen ? (
           <CloseIcon className="w-7 h-7 sm:w-8 sm:h-8" />
         ) : (
-          <ChatBubbleIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+          <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8" />
         )}
       </button>
     </div>
